@@ -880,7 +880,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rpcCluster: 3
   customRpc: http://localhost:8899
-  webSocketsRpc: ws://localhost:8080
+  webSocketsRpc: ws://localhost:8900
   autoConnectOnStartup: 0
   web3AuthWalletOptions:
     appName: Web3Auth Sample App
@@ -1291,6 +1291,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 361775995}
     m_Modifications:
+    - target: {fileID: 8899174230227746436, guid: ba000cab565a44c178af503c10992f7e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -101.70001
+      objectReference: {fileID: 0}
     - target: {fileID: 8899174231092247630, guid: ba000cab565a44c178af503c10992f7e, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5

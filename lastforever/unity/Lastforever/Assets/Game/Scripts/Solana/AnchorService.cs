@@ -156,8 +156,9 @@ public class AnchorService : MonoBehaviour
 
         if (playerData != null)
         {
-            await anchorClient.SubscribePlayerDataAsync(PlayerDataPDA, (state, value, playerData) =>
+            await anchorClient.SubscribePlayerDataAsync(PlayerDataPDA,  async(state, value, playerData) =>
             {
+                await UniTask.SwitchToMainThread();
                 OnReceivedPlayerDataUpdate(playerData);
             }, Commitment.Processed);
         }
@@ -192,9 +193,10 @@ public class AnchorService : MonoBehaviour
 
         if (gameData != null)
         {
-            await anchorClient.SubscribeGameDataAsync(GameDataPDA, (state, value, gameData) =>
+            await anchorClient.SubscribeGameDataAsync(GameDataPDA, async (state, value, gameData) =>
             {
-                OnRecievedGameDataUpdate(gameData);
+              await UniTask.SwitchToMainThread();
+              OnRecievedGameDataUpdate(gameData);
             }, Commitment.Processed);
         }
     }
@@ -224,7 +226,7 @@ public class AnchorService : MonoBehaviour
         var initTx = LastforeverProgram.InitPlayer(accounts, levelSeed, AnchorProgramIdPubKey);
         tx.Add(initTx);
 
-        if (true)
+        if (useSession)
         {
             if (!(await IsSessionTokenInitialized()))
             {
@@ -306,7 +308,7 @@ public class AnchorService : MonoBehaviour
 
     public async void ChopTree(bool useSession, Action onSuccess)
     {
-        if (!Instance.IsSessionValid())
+        if (!Instance.IsSessionValid() && useSession)
         {
             await Instance.UpdateSessionValid();
             ServiceFactory.Resolve<UiService>().OpenPopup(UiService.ScreenType.SessionPopup, new SessionPopupUiData());
