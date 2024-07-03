@@ -53,6 +53,17 @@ describe("lastforever", () => {
           vault: vaultPDA,
         })
         .rpc({ skipPreflight: false });
+
+      let tx2 = await program.methods
+        .initPlayer(gameDataSeed)
+        .accounts({
+          player: playerPDA,
+          gameData: gameDataPDA,
+          signer: payer.publicKey,
+          systemProgram: anchor.web3.SystemProgram.programId,
+          vault: vaultPDA,
+        })
+        .rpc({ skipPreflight: false });
       console.log("Init transaction", tx);
 
       await anchor.getProvider().connection.confirmTransaction(tx, "confirmed");

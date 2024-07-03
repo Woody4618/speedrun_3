@@ -50,6 +50,7 @@ public class AnchorService : MonoBehaviour
     private SessionWallet sessionWallet;
     private PublicKey PlayerDataPDA;
     private PublicKey GameDataPDA;
+    private PublicKey VaultPDA;
     private bool _isInitialized;
     private LastforeverClient anchorClient;
     private int blockingTransactionsInProgress;
@@ -106,6 +107,10 @@ public class AnchorService : MonoBehaviour
         PublicKey.TryFindProgramAddress(new[]
                 {Encoding.UTF8.GetBytes("player"), account.PublicKey.KeyBytes},
             AnchorProgramIdPubKey, out PlayerDataPDA, out byte bump);
+
+        PublicKey.TryFindProgramAddress(new[]
+                {Encoding.UTF8.GetBytes("vault")},
+            AnchorProgramIdPubKey, out VaultPDA, out byte bump3);
 
         PublicKey.TryFindProgramAddress(new[]
                 {Encoding.UTF8.GetBytes(levelSeed)},
@@ -243,6 +248,7 @@ public class AnchorService : MonoBehaviour
         accounts.GameData = GameDataPDA;
         accounts.Signer = Web3.Account;
         accounts.SystemProgram = SystemProgram.ProgramIdKey;
+        accounts.Vault = VaultPDA;
 
         var initTx = LastforeverProgram.InitPlayer(accounts, levelSeed, AnchorProgramIdPubKey);
         tx.Add(initTx);
