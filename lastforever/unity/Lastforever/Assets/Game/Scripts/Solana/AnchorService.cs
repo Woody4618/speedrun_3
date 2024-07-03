@@ -9,6 +9,7 @@ using Game.Scripts.Ui;
 using Lastforever;
 using Lastforever.Accounts;
 using Lastforever.Program;
+using Lastforever.Types;
 using Solana.Unity.Programs;
 using Solana.Unity.Programs.Models;
 using Solana.Unity.Rpc.Core.Http;
@@ -24,7 +25,7 @@ using Debug = UnityEngine.Debug;
 
 public class AnchorService : MonoBehaviour
 {
-    public PublicKey AnchorProgramIdPubKey = new("AuXrLU6a5bmA9XoFDPvkZ4KHqvYkvcNtKaNPg7fjYz3m");
+    public PublicKey AnchorProgramIdPubKey = new("h4D4pns4hvYhFnqy9cZiZyZm65kjZbFqbfZWdrnVjYZ");
 
     // Needs to be the same constants as in the anchor program
     public const int TIME_TO_REFILL_ENERGY = 60;
@@ -205,7 +206,27 @@ public class AnchorService : MonoBehaviour
     {
         Debug.Log($"Socket Message: Total log chopped  {gameData.TotalWoodCollected}.");
         CurrentGameData = gameData;
+        foreach (var snail in CurrentGameData.Snails)
+        {
+          Debug.Log("Snail" + snail.TotalFeedDelay);
+        }
         OnGameDataChanged?.Invoke(gameData);
+    }
+
+    public float CalculateCurrentPosition(SnailData data)
+    {
+      // Calculate the effective velocity
+      var effectiveVelocity = data.Velocity - data.ArmorLevel;
+
+      // Calculate the total crawl time considering the feed delay
+      var currentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+      var elapsedTime = (ulong)(currentTime - data.LastUpdateTime);
+      var adjustedTime = elapsedTime > data.TotalFeedDelay ? elapsedTime - data.TotalFeedDelay : 0;
+
+      // Calculate new position based on effective velocity
+      var y_newPosition = adjustedTime * 0.01f * effectiveVelocity;
+
+      return y_newPosition;
     }
 
     public async Task InitAccounts(bool useSession)
@@ -352,6 +373,60 @@ public class AnchorService : MonoBehaviour
             transaction.Add(chopInstruction);
             Debug.Log("Sign and send init without session");
             await SendAndConfirmTransaction(Web3.Wallet, transaction, "Chop Tree without session.", onSucccess: onSuccess);
+        }
+
+        if (CurrentGameData == null)
+        {
+            await SubscribeToGameDataUpdates();
+        }
+    }
+
+    public async void SnailAction(bool useSession, Action onSuccess, byte action)
+    {
+        if (!Instance.IsSessionValid() && useSession)
+        {
+            await Instance.UpdateSessionValid();
+            ServiceFactory.Resolve<UiService>().OpenPopup(UiService.ScreenType.SessionPopup, new SessionPopupUiData());
+            return;
+        }
+
+        // only for time tracking feel free to remove
+        var stopWatch = new Stopwatch();
+        stopWatch.Start();
+        stopWatches[++transactionCounter] = stopWatch;
+
+        var transaction = new Transaction()
+        {
+            FeePayer = Web3.Account,
+            Instructions = new List<TransactionInstruction>(),
+            RecentBlockHash = await Web3.BlockHash(maxSeconds: 15)
+        };
+
+        InteractSnailAccounts interactSnailAccounts = new InteractSnailAccounts
+        {
+            Player = PlayerDataPDA,
+            GameData = GameDataPDA,
+            SystemProgram = SystemProgram.ProgramIdKey
+        };
+
+        if (useSession)
+        {
+            transaction.FeePayer = sessionWallet.Account.PublicKey;
+            interactSnailAccounts.Signer = sessionWallet.Account.PublicKey;
+            interactSnailAccounts.SessionToken = sessionWallet.SessionTokenPDA;
+            var interactInstruction = LastforeverProgram.InteractSnail(interactSnailAccounts, levelSeed, action,transactionCounter, AnchorProgramIdPubKey);
+            transaction.Add(interactInstruction);
+            Debug.Log("Sign and send interact with session");
+            await SendAndConfirmTransaction(sessionWallet, transaction, "interact with session.", isBlocking: false, onSucccess: onSuccess);
+        }
+        else
+        {
+            transaction.FeePayer = Web3.Account.PublicKey;
+            interactSnailAccounts.Signer = Web3.Account.PublicKey;
+            var interactInstruction = LastforeverProgram.InteractSnail(interactSnailAccounts, levelSeed, action, counter:transactionCounter,  AnchorProgramIdPubKey);
+            transaction.Add(interactInstruction);
+            Debug.Log("Sign and send interact without session");
+            await SendAndConfirmTransaction(Web3.Wallet, transaction, "interact without session.", onSucccess: onSuccess);
         }
 
         if (CurrentGameData == null)

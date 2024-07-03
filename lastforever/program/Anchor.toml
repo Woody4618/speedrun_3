@@ -1,7 +1,7 @@
 [features]
 seeds = false
 [programs.localnet]
-lastforever = "AuXrLU6a5bmA9XoFDPvkZ4KHqvYkvcNtKaNPg7fjYz3m"
+lastforever = "h4D4pns4hvYhFnqy9cZiZyZm65kjZbFqbfZWdrnVjYZ"
 
 [registry]
 url = "https://anchor.projectserum.com"

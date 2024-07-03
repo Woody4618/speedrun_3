@@ -7,7 +7,7 @@ pub mod instructions;
 pub mod state;
 use instructions::*;
 
-declare_id!("AuXrLU6a5bmA9XoFDPvkZ4KHqvYkvcNtKaNPg7fjYz3m");
+declare_id!("h4D4pns4hvYhFnqy9cZiZyZm65kjZbFqbfZWdrnVjYZ");
 
 #[program]
 pub mod lastforever {
@@ -15,6 +15,24 @@ pub mod lastforever {
 
   pub fn init_player(ctx: Context<InitPlayer>, _level_seed: String) -> Result<()> {
     init_player::init_player(ctx)
+  }
+
+  pub fn interact_snail(
+    ctx: Context<InteractSnail>,
+    _level_seed: String,
+    action: u8,
+    counter: u16
+  ) -> Result<()> {
+    interact_snail::interact_snail(ctx, action)
+  }
+
+  pub fn send_bird(
+    ctx: Context<SendBird>,
+    _level_seed: String,
+    action: u8,
+    counter: u16
+  ) -> Result<()> {
+    send_bird::send_bird(ctx, action)
   }
 
   // This function lets the player chop a tree and get 1 wood. The session_auth_or macro
