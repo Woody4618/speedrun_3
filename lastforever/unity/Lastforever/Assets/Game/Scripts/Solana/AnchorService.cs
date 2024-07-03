@@ -57,7 +57,7 @@ public class AnchorService : MonoBehaviour
     private int nonBlockingTransactionsInProgress;
     private long? sessionValidUntil;
     private string sessionKeyPassword = "inGame"; // Would be better to generate and save in playerprefs
-    private string levelSeed = "level_2";
+    private string levelSeed = "gameData";
     private ushort transactionCounter = 0;
 
     // Only used to show transaction speed. Feel free to remove

@@ -75,6 +75,6 @@ public class SnailContextMenu : MonoBehaviour
     {
       return;
     }
-    CurrentPositionText.text = "Current position = " + AnchorService.Instance.CalculateCurrentPosition(currentSnailData).ToString();
+    CurrentPositionText.text = "Current position = " + AnchorService.Instance.CalculateCurrentPosition(currentSnailData).ToString() + "mm";
   }
 }

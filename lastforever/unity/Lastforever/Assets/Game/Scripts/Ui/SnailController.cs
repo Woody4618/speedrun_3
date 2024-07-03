@@ -48,6 +48,10 @@ public class SnailController : MonoBehaviour
       foreach (var snailData in gameData.Snails)
       {
         var newSnail = Instantiate(SnailViewPrefab, SnailsRoot.transform);
+        if (snailData.Authority == Web3.Account.PublicKey)
+        {
+          newSnail.transform.localScale = new Vector3(-1, 1, 1);
+        }
         newSnail.Init(snailData, onClick);
       }
     }
