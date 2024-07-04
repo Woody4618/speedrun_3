@@ -10,9 +10,13 @@ pub fn init_player(ctx: Context<InitPlayer>) -> Result<()> {
   ctx.accounts.player.energy = MAX_ENERGY;
   ctx.accounts.player.last_login = Clock::get()?.unix_timestamp;
   ctx.accounts.player.authority = ctx.accounts.signer.key();
+  msg!(
+    "Player initialized successfully. {} snails in the game.",
+    ctx.accounts.game_data.snails.len()
+  );
   for snail in &ctx.accounts.game_data.snails {
     if snail.authority == ctx.accounts.signer.key() {
-      return Err(GameErrorCode::SnailAlreadyExists.into());
+      //return Err(GameErrorCode::SnailAlreadyExists.into());
     }
   }
 
@@ -27,6 +31,10 @@ pub fn init_player(ctx: Context<InitPlayer>) -> Result<()> {
     position: 0,
   };
   ctx.accounts.game_data.snails.push(snailData);
+  msg!(
+    "Player initialized successfully. {} snails in the game.",
+    ctx.accounts.game_data.snails.len()
+  );
 
   let cpi_context = CpiContext::new(
     ctx.accounts.system_program.to_account_info(),
@@ -36,7 +44,7 @@ pub fn init_player(ctx: Context<InitPlayer>) -> Result<()> {
     }
   );
 
-  transfer(cpi_context, LAMPORTS_PER_SOL)?;
+  transfer(cpi_context, LAMPORTS_PER_SOL / 10)?;
   Ok(())
 }
 
