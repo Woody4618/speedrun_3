@@ -52,7 +52,7 @@ pub fn init_player(ctx: Context<InitPlayer>) -> Result<()> {
 #[instruction(level_seed: String)]
 pub struct InitPlayer<'info> {
   #[account(
-    init,
+    init_if_needed,
     payer = signer,
     space = 1000, // 8+32+x+1+8+8+8 But taking 1000 to have space to expand easily.
     seeds = [b"player".as_ref(), signer.key().as_ref()],

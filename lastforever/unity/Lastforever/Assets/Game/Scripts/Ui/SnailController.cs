@@ -14,6 +14,7 @@ public class SnailController : MonoBehaviour
     public GameObject SnailsRoot;
     public ScrollView ScrollView;
     public ScrollRect ScrollRect;
+    public RectTransform ContentPanel;
 
     void Start()
     {
@@ -54,6 +55,8 @@ public class SnailController : MonoBehaviour
         }
         newSnail.Init(snailData, onClick);
       }
+
+      ScrollToMySnail();
     }
 
     private void ScrollToMySnail()
@@ -77,13 +80,24 @@ public class SnailController : MonoBehaviour
         var snailView = SnailsRoot.transform.GetChild(i).GetComponent<SnailView>();
         if (snailView != null && snailView.SnailData.Authority == Web3.Account.PublicKey)
         {
-          float targetPosition = (childCount > 1) ? (float)i / (childCount - 1) : 0.5f;
-          ScrollRect.verticalNormalizedPosition = Mathf.Clamp01(1 - targetPosition);
+          //float targetPosition = (childCount > 1) ? (float)i / (childCount - 1) : 0.5f;
+          //ScrollRect.verticalNormalizedPosition = Mathf.Clamp01(1 - targetPosition);
+
+          SnapTo(snailView.transform as RectTransform);
           return;
         }
       }
 
       Debug.LogWarning("Snail with the given authority not found.");
+    }
+
+    public void SnapTo(RectTransform target)
+    {
+      Canvas.ForceUpdateCanvases();
+
+      ContentPanel.anchoredPosition =
+        (Vector2)ScrollRect.transform.InverseTransformPoint(ContentPanel.position)
+        - (Vector2)ScrollRect.transform.InverseTransformPoint(target.position);
     }
 
     private void onClick(SnailView snailView)

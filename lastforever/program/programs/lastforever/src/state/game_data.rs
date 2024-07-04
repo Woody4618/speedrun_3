@@ -6,6 +6,8 @@ use crate::constants::MAX_WOOD_PER_TREE;
 pub struct GameData {
   pub total_wood_collected: u64,
   pub snails: Vec<SnailData>,
+  pub last_snail_eaten: Pubkey,
+  pub last_snail_eaten_time: i64,
 }
 
 impl GameData {

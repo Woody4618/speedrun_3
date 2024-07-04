@@ -903,7 +903,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rpcCluster: 3
   customRpc: http://localhost:8899
-  webSocketsRpc: ws://localhost:8090
+  webSocketsRpc: ws://localhost:8900
   autoConnectOnStartup: 0
   web3AuthWalletOptions:
     appName: Web3Auth Sample App

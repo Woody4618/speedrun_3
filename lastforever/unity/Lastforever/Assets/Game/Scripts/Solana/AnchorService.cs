@@ -179,7 +179,7 @@ public class AnchorService : MonoBehaviour
         OnPlayerDataChanged?.Invoke(playerData);
     }
 
-    private async Task SubscribeToGameDataUpdates()
+    public async Task SubscribeToGameDataUpdates()
     {
         AccountResultWrapper<GameData> gameData = null;
 
@@ -430,6 +430,61 @@ public class AnchorService : MonoBehaviour
             transaction.FeePayer = Web3.Account.PublicKey;
             interactSnailAccounts.Signer = Web3.Account.PublicKey;
             var interactInstruction = LastforeverProgram.InteractSnail(interactSnailAccounts, levelSeed, action, counter:transactionCounter,  AnchorProgramIdPubKey);
+            transaction.Add(interactInstruction);
+            Debug.Log("Sign and send interact without session");
+            await SendAndConfirmTransaction(Web3.Wallet, transaction, "interact without session.", onSucccess: onSuccess);
+        }
+
+        if (CurrentGameData == null)
+        {
+            await SubscribeToGameDataUpdates();
+        }
+    }
+
+    public async void SendBird(bool useSession, Action onSuccess)
+    {
+        if (!Instance.IsSessionValid() && useSession)
+        {
+            await Instance.UpdateSessionValid();
+            ServiceFactory.Resolve<UiService>().OpenPopup(UiService.ScreenType.SessionPopup, new SessionPopupUiData());
+            return;
+        }
+
+        // only for time tracking feel free to remove
+        var stopWatch = new Stopwatch();
+        stopWatch.Start();
+        stopWatches[++transactionCounter] = stopWatch;
+
+        var transaction = new Transaction()
+        {
+            FeePayer = Web3.Account,
+            Instructions = new List<TransactionInstruction>(),
+            RecentBlockHash = await Web3.BlockHash(maxSeconds: 15)
+        };
+
+        SendBirdAccounts sendBirdAccounts = new SendBirdAccounts
+        {
+            Player = PlayerDataPDA,
+            GameData = GameDataPDA,
+            Vault = VaultPDA,
+            SystemProgram = SystemProgram.ProgramIdKey
+        };
+
+        if (useSession)
+        {
+            transaction.FeePayer = sessionWallet.Account.PublicKey;
+            sendBirdAccounts.Signer = sessionWallet.Account.PublicKey;
+            sendBirdAccounts.SessionToken = sessionWallet.SessionTokenPDA;
+            var interactInstruction = LastforeverProgram.SendBird(sendBirdAccounts, levelSeed, 0,transactionCounter, AnchorProgramIdPubKey);
+            transaction.Add(interactInstruction);
+            Debug.Log("Sign and send interact with session");
+            await SendAndConfirmTransaction(sessionWallet, transaction, "interact with session.", isBlocking: false, onSucccess: onSuccess);
+        }
+        else
+        {
+            transaction.FeePayer = Web3.Account.PublicKey;
+            sendBirdAccounts.Signer = Web3.Account.PublicKey;
+            var interactInstruction = LastforeverProgram.SendBird(sendBirdAccounts, levelSeed, 0, counter:transactionCounter,  AnchorProgramIdPubKey);
             transaction.Add(interactInstruction);
             Debug.Log("Sign and send interact without session");
             await SendAndConfirmTransaction(Web3.Wallet, transaction, "interact without session.", onSucccess: onSuccess);

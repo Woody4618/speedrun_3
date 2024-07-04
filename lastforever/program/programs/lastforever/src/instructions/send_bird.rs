@@ -10,15 +10,21 @@ pub fn send_bird(ctx: Context<SendBird>, action: u8) -> Result<()> {
   let mut highest_snail_index: Option<usize> = None;
   let mut highest_value: u64 = u64::MIN;
 
+  msg!("Snail amount {}", ctx.accounts.game_data.snails.len());
+
+  for snail in &mut ctx.accounts.game_data.snails {
+    snail.update_position(Clock::get()?.unix_timestamp);
+  }
+
   // Iterate through the snails to find the highest one
   for (index, snail) in ctx.accounts.game_data.snails.iter().enumerate() {
-    if snail.authority == ctx.accounts.signer.key() {
-      // Replace `snail.value` with the actual property you want to compare
-      if snail.position > highest_value {
-        highest_value = snail.position;
-        highest_snail_index = Some(index);
-      }
+    //if snail.authority == ctx.accounts.signer.key() {
+    // Replace `snail.value` with the actual property you want to compare
+    if snail.position > highest_value {
+      highest_value = snail.position;
+      highest_snail_index = Some(index);
     }
+    //}
   }
 
   // If no snail is found, return an error
@@ -26,9 +32,13 @@ pub fn send_bird(ctx: Context<SendBird>, action: u8) -> Result<()> {
     return Err(GameErrorCode::SnailDoesNotExist.into());
   }
 
+  ctx.accounts.game_data.last_snail_eaten = ctx.accounts.game_data.snails[
+    highest_snail_index.unwrap()
+  ].authority;
+  ctx.accounts.game_data.last_snail_eaten_time = Clock::get()?.unix_timestamp;
+
   // Remove the highest snail from the array
   ctx.accounts.game_data.snails.remove(highest_snail_index.unwrap());
-
   let amount_per_snail = LAMPORTS_PER_SOL / (ctx.accounts.game_data.snails.len() as u64);
 
   for snail in &ctx.accounts.game_data.snails {
