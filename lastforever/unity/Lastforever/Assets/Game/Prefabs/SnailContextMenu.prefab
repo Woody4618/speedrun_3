@@ -65,7 +65,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: CUSTOMISATION
+  m_text: EQUIPMENT
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ac89246f626b95e4f9c4cb7d4ea75718, type: 2}
   m_sharedMaterial: {fileID: -8423518227927366541, guid: ac89246f626b95e4f9c4cb7d4ea75718, type: 2}
