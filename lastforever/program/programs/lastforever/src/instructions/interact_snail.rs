@@ -5,11 +5,11 @@ use crate::{ GameData };
 use anchor_lang::prelude::*;
 use session_keys::{ Session, SessionToken };
 
-pub fn interact_snail(ctx: Context<InteractSnail>, action: u8) -> Result<()> {
+pub fn interact_snail(ctx: Context<InteractSnail>, action: u8, snail_id: Pubkey) -> Result<()> {
   let mut snailData: Option<&mut SnailData> = None;
 
   for snail in &mut ctx.accounts.game_data.snails {
-    if snail.authority == ctx.accounts.signer.key() {
+    if snail.authority == snail_id {
       snailData = Some(snail);
     }
   }
@@ -69,7 +69,11 @@ pub struct InteractSnail<'info> {
   // Session Tokens are passed as optional accounts
   pub session_token: Option<Account<'info, SessionToken>>,
 
-  #[account(seeds = [b"player".as_ref(), signer.key().as_ref()], bump)]
+  #[account(
+      mut,
+      seeds = [b"player".as_ref(), player.authority.key().as_ref()],
+      bump,
+  )]
   pub player: Account<'info, PlayerData>,
 
   #[account(

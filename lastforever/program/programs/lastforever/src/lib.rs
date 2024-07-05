@@ -25,9 +25,10 @@ pub mod lastforever {
     ctx: Context<InteractSnail>,
     _level_seed: String,
     action: u8,
-    counter: u16
+    counter: u16,
+    snail_id: Pubkey
   ) -> Result<()> {
-    interact_snail::interact_snail(ctx, action)
+    interact_snail::interact_snail(ctx, action, snail_id)
   }
 
   pub fn send_bird(

@@ -29,7 +29,7 @@ public class AnchorService : MonoBehaviour
 
     // Needs to be the same constants as in the anchor program
     public const int TIME_TO_REFILL_ENERGY = 60;
-    public const int BIRD_EAT_DELAY = 20;
+    public const int BIRD_EAT_DELAY = 30;
     public const int MAX_ENERGY = 100;
     public const int MAX_WOOD_PER_TREE = 100000;
 
@@ -388,7 +388,7 @@ public class AnchorService : MonoBehaviour
         }
     }
 
-    public async void SnailAction(bool useSession, Action onSuccess, byte action)
+    public async void SnailAction(bool useSession, Action onSuccess, byte action, PublicKey snailId)
     {
         if (!Instance.IsSessionValid() && useSession)
         {
@@ -421,7 +421,7 @@ public class AnchorService : MonoBehaviour
             transaction.FeePayer = sessionWallet.Account.PublicKey;
             interactSnailAccounts.Signer = sessionWallet.Account.PublicKey;
             interactSnailAccounts.SessionToken = sessionWallet.SessionTokenPDA;
-            var interactInstruction = LastforeverProgram.InteractSnail(interactSnailAccounts, levelSeed, action,transactionCounter, AnchorProgramIdPubKey);
+            var interactInstruction = LastforeverProgram.InteractSnail(interactSnailAccounts, levelSeed, action,transactionCounter, snailId, AnchorProgramIdPubKey);
             transaction.Add(interactInstruction);
             Debug.Log("Sign and send interact with session");
             await SendAndConfirmTransaction(sessionWallet, transaction, "interact with session.", isBlocking: false, onSucccess: onSuccess);
@@ -430,7 +430,7 @@ public class AnchorService : MonoBehaviour
         {
             transaction.FeePayer = Web3.Account.PublicKey;
             interactSnailAccounts.Signer = Web3.Account.PublicKey;
-            var interactInstruction = LastforeverProgram.InteractSnail(interactSnailAccounts, levelSeed, action, counter:transactionCounter,  AnchorProgramIdPubKey);
+            var interactInstruction = LastforeverProgram.InteractSnail(interactSnailAccounts, levelSeed, action, counter:transactionCounter,snailId,  AnchorProgramIdPubKey);
             transaction.Add(interactInstruction);
             Debug.Log("Sign and send interact without session");
             await SendAndConfirmTransaction(Web3.Wallet, transaction, "interact without session.", onSucccess: onSuccess);
@@ -526,7 +526,7 @@ public class AnchorService : MonoBehaviour
             SystemProgram = SystemProgram.ProgramIdKey
         };
 
-        if (useSession)
+        if (false)
         {
             transaction.FeePayer = sessionWallet.Account.PublicKey;
             chopTreeAccounts.Signer = sessionWallet.Account.PublicKey;

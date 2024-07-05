@@ -331,9 +331,9 @@ namespace Lastforever
             return await SignAndSendTransaction(instr, feePayer, signingCallback);
         }
 
-        public async Task<RequestResult<string>> SendInteractSnailAsync(InteractSnailAccounts accounts, string levelSeed, byte action, ushort counter, PublicKey feePayer, Func<byte[], PublicKey, byte[]> signingCallback, PublicKey programId)
+        public async Task<RequestResult<string>> SendInteractSnailAsync(InteractSnailAccounts accounts, string levelSeed, byte action, ushort counter, PublicKey snailId, PublicKey feePayer, Func<byte[], PublicKey, byte[]> signingCallback, PublicKey programId)
         {
-            Solana.Unity.Rpc.Models.TransactionInstruction instr = Program.LastforeverProgram.InteractSnail(accounts, levelSeed, action, counter, programId);
+            Solana.Unity.Rpc.Models.TransactionInstruction instr = Program.LastforeverProgram.InteractSnail(accounts, levelSeed, action, counter, snailId, programId);
             return await SignAndSendTransaction(instr, feePayer, signingCallback);
         }
 
@@ -454,10 +454,10 @@ namespace Lastforever
                 return new Solana.Unity.Rpc.Models.TransactionInstruction{Keys = keys, ProgramId = programId.KeyBytes, Data = resultData};
             }
 
-            public static Solana.Unity.Rpc.Models.TransactionInstruction InteractSnail(InteractSnailAccounts accounts, string levelSeed, byte action, ushort counter, PublicKey programId)
+            public static Solana.Unity.Rpc.Models.TransactionInstruction InteractSnail(InteractSnailAccounts accounts, string levelSeed, byte action, ushort counter, PublicKey snailId, PublicKey programId)
             {
                 List<Solana.Unity.Rpc.Models.AccountMeta> keys = new()
-                {Solana.Unity.Rpc.Models.AccountMeta.ReadOnly(accounts.SessionToken == null ? programId : accounts.SessionToken, false), Solana.Unity.Rpc.Models.AccountMeta.ReadOnly(accounts.Player, false), Solana.Unity.Rpc.Models.AccountMeta.Writable(accounts.GameData, false), Solana.Unity.Rpc.Models.AccountMeta.Writable(accounts.Signer, true), Solana.Unity.Rpc.Models.AccountMeta.ReadOnly(accounts.SystemProgram, false)};
+                {Solana.Unity.Rpc.Models.AccountMeta.ReadOnly(accounts.SessionToken == null ? programId : accounts.SessionToken, false), Solana.Unity.Rpc.Models.AccountMeta.Writable(accounts.Player, false), Solana.Unity.Rpc.Models.AccountMeta.Writable(accounts.GameData, false), Solana.Unity.Rpc.Models.AccountMeta.Writable(accounts.Signer, true), Solana.Unity.Rpc.Models.AccountMeta.ReadOnly(accounts.SystemProgram, false)};
                 byte[] _data = new byte[1200];
                 int offset = 0;
                 _data.WriteU64(15617493602183854855UL, offset);
@@ -467,6 +467,8 @@ namespace Lastforever
                 offset += 1;
                 _data.WriteU16(counter, offset);
                 offset += 2;
+                _data.WritePubKey(snailId, offset);
+                offset += 32;
                 byte[] resultData = new byte[offset];
                 Array.Copy(_data, resultData, offset);
                 return new Solana.Unity.Rpc.Models.TransactionInstruction{Keys = keys, ProgramId = programId.KeyBytes, Data = resultData};
@@ -475,7 +477,7 @@ namespace Lastforever
             public static Solana.Unity.Rpc.Models.TransactionInstruction SendBird(SendBirdAccounts accounts, string levelSeed, byte action, ushort counter, PublicKey programId)
             {
                 List<Solana.Unity.Rpc.Models.AccountMeta> keys = new()
-                {Solana.Unity.Rpc.Models.AccountMeta.ReadOnly(accounts.SessionToken == null ? programId : accounts.SessionToken, false), Solana.Unity.Rpc.Models.AccountMeta.ReadOnly(accounts.Player, false), Solana.Unity.Rpc.Models.AccountMeta.Writable(accounts.GameData, false), Solana.Unity.Rpc.Models.AccountMeta.Writable(accounts.Signer, true), Solana.Unity.Rpc.Models.AccountMeta.Writable(accounts.Vault, false), Solana.Unity.Rpc.Models.AccountMeta.ReadOnly(accounts.SystemProgram, false)};
+                {Solana.Unity.Rpc.Models.AccountMeta.ReadOnly(accounts.SessionToken == null ? programId : accounts.SessionToken, false), Solana.Unity.Rpc.Models.AccountMeta.Writable(accounts.Player, false), Solana.Unity.Rpc.Models.AccountMeta.Writable(accounts.GameData, false), Solana.Unity.Rpc.Models.AccountMeta.Writable(accounts.Signer, true), Solana.Unity.Rpc.Models.AccountMeta.Writable(accounts.Vault, false), Solana.Unity.Rpc.Models.AccountMeta.ReadOnly(accounts.SystemProgram, false)};
                 byte[] _data = new byte[1200];
                 int offset = 0;
                 _data.WriteU64(11289621917330069412UL, offset);

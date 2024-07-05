@@ -1,7 +1,6 @@
 pub use crate::errors::GameErrorCode;
 use crate::state::player_data::PlayerData;
 use crate::{ ChestVaultAccount, GameData };
-use anchor_lang::system_program::transfer;
 use anchor_lang::{ prelude::*, system_program };
 use session_keys::{ Session, SessionToken };
 use solana_program::native_token::LAMPORTS_PER_SOL;
@@ -44,14 +43,8 @@ pub fn send_bird(ctx: Context<SendBird>, action: u8) -> Result<()> {
   for snail in &ctx.accounts.game_data.snails {
     // Skip the snail of the signer
     if snail.authority != ctx.accounts.signer.key() {
-      let cpi_context = CpiContext::new(
-        ctx.accounts.system_program.to_account_info(),
-        system_program::Transfer {
-          from: ctx.accounts.signer.to_account_info().clone(),
-          to: ctx.accounts.vault.to_account_info().clone(), // You need to replace this with the actual recipient's account info
-        }
-      );
-      transfer(cpi_context, amount_per_snail)?;
+      **ctx.accounts.vault.to_account_info().try_borrow_mut_lamports()? -= amount_per_snail;
+      **ctx.accounts.signer.to_account_info().try_borrow_mut_lamports()? += amount_per_snail;
     }
   }
 
@@ -70,7 +63,11 @@ pub struct SendBird<'info> {
   // Session Tokens are passed as optional accounts
   pub session_token: Option<Account<'info, SessionToken>>,
 
-  #[account(seeds = [b"player".as_ref(), signer.key().as_ref()], bump)]
+  #[account(
+      mut,
+      seeds = [b"player".as_ref(), player.authority.key().as_ref()],
+      bump,
+  )]
   pub player: Account<'info, PlayerData>,
 
   #[account(
