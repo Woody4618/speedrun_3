@@ -38,7 +38,7 @@ pub fn send_bird(ctx: Context<SendBird>, action: u8) -> Result<()> {
 
   // Remove the highest snail from the array
   ctx.accounts.game_data.snails.remove(highest_snail_index.unwrap());
-  let amount_per_snail = LAMPORTS_PER_SOL / (ctx.accounts.game_data.snails.len() as u64);
+  let amount_per_snail = LAMPORTS_PER_SOL / (ctx.accounts.game_data.snails.len() as u64) / 10;
 
   for snail in &ctx.accounts.game_data.snails {
     // Skip the snail of the signer
