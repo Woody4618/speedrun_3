@@ -51,6 +51,10 @@ namespace Lastforever
 
             public SnailData[] Snails { get; set; }
 
+            public PublicKey LastSnailEaten { get; set; }
+
+            public long LastSnailEatenTime { get; set; }
+
             public static GameData Deserialize(ReadOnlySpan<byte> _data)
             {
                 int offset = 0;
@@ -73,6 +77,10 @@ namespace Lastforever
                     result.Snails[resultSnailsIdx] = resultSnailsresultSnailsIdx;
                 }
 
+                result.LastSnailEaten = _data.GetPubKey(offset);
+                offset += 32;
+                result.LastSnailEatenTime = _data.GetS64(offset);
+                offset += 8;
                 return result;
             }
         }
@@ -317,6 +325,12 @@ namespace Lastforever
             return await SignAndSendTransaction(instr, feePayer, signingCallback);
         }
 
+        public async Task<RequestResult<string>> SendEnterRaceAsync(EnterRaceAccounts accounts, string levelSeed, PublicKey feePayer, Func<byte[], PublicKey, byte[]> signingCallback, PublicKey programId)
+        {
+            Solana.Unity.Rpc.Models.TransactionInstruction instr = Program.LastforeverProgram.EnterRace(accounts, levelSeed, programId);
+            return await SignAndSendTransaction(instr, feePayer, signingCallback);
+        }
+
         public async Task<RequestResult<string>> SendInteractSnailAsync(InteractSnailAccounts accounts, string levelSeed, byte action, ushort counter, PublicKey feePayer, Func<byte[], PublicKey, byte[]> signingCallback, PublicKey programId)
         {
             Solana.Unity.Rpc.Models.TransactionInstruction instr = Program.LastforeverProgram.InteractSnail(accounts, levelSeed, action, counter, programId);
@@ -344,6 +358,19 @@ namespace Lastforever
     namespace Program
     {
         public class InitPlayerAccounts
+        {
+            public PublicKey Player { get; set; }
+
+            public PublicKey GameData { get; set; }
+
+            public PublicKey Vault { get; set; }
+
+            public PublicKey Signer { get; set; }
+
+            public PublicKey SystemProgram { get; set; }
+        }
+
+        public class EnterRaceAccounts
         {
             public PublicKey Player { get; set; }
 
@@ -406,6 +433,20 @@ namespace Lastforever
                 byte[] _data = new byte[1200];
                 int offset = 0;
                 _data.WriteU64(4819994211046333298UL, offset);
+                offset += 8;
+                offset += _data.WriteBorshString(levelSeed, offset);
+                byte[] resultData = new byte[offset];
+                Array.Copy(_data, resultData, offset);
+                return new Solana.Unity.Rpc.Models.TransactionInstruction{Keys = keys, ProgramId = programId.KeyBytes, Data = resultData};
+            }
+
+            public static Solana.Unity.Rpc.Models.TransactionInstruction EnterRace(EnterRaceAccounts accounts, string levelSeed, PublicKey programId)
+            {
+                List<Solana.Unity.Rpc.Models.AccountMeta> keys = new()
+                {Solana.Unity.Rpc.Models.AccountMeta.Writable(accounts.Player, false), Solana.Unity.Rpc.Models.AccountMeta.Writable(accounts.GameData, false), Solana.Unity.Rpc.Models.AccountMeta.Writable(accounts.Vault, false), Solana.Unity.Rpc.Models.AccountMeta.Writable(accounts.Signer, true), Solana.Unity.Rpc.Models.AccountMeta.ReadOnly(accounts.SystemProgram, false)};
+                byte[] _data = new byte[1200];
+                int offset = 0;
+                _data.WriteU64(2266413783460574962UL, offset);
                 offset += 8;
                 offset += _data.WriteBorshString(levelSeed, offset);
                 byte[] resultData = new byte[offset];

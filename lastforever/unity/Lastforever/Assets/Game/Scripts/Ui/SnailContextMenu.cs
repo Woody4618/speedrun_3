@@ -5,6 +5,7 @@ using Solana.Unity.SDK;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using WebSocketSharp;
 
 public class SnailContextMenu : MonoBehaviour
 {
@@ -32,6 +33,7 @@ public class SnailContextMenu : MonoBehaviour
     {
       Debug.Log("Success snail interact");
     }, 0);
+    Close();
   }
 
   private void OnSpeedupClicked()
@@ -40,6 +42,7 @@ public class SnailContextMenu : MonoBehaviour
     {
       Debug.Log("Success snail interact");
     }, 1);
+    Close();
   }
 
   private void OnUpgradeArmorClicked()
@@ -48,6 +51,7 @@ public class SnailContextMenu : MonoBehaviour
     {
       Debug.Log("Success snail interact");
     }, 2);
+    Close();
   }
 
   private void OnUpgradeWeaponClicked()
@@ -56,6 +60,7 @@ public class SnailContextMenu : MonoBehaviour
     {
       Debug.Log("Success snail interact");
     }, 3);
+    Close();
   }
 
   private void Close()

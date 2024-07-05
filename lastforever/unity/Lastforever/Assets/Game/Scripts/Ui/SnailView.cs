@@ -34,6 +34,7 @@ public class SnailView : MonoBehaviour
   private void UpdatePosition(SnailData data)
   {
     var y_newPos = AnchorService.Instance.CalculateCurrentPosition(data);
+    y_newPos = Mathf.Log10(y_newPos + 1);
     transform.localPosition = new Vector3(0, y_newPos, 0);
   }
 

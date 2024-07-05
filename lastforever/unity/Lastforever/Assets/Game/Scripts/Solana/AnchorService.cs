@@ -29,6 +29,7 @@ public class AnchorService : MonoBehaviour
 
     // Needs to be the same constants as in the anchor program
     public const int TIME_TO_REFILL_ENERGY = 60;
+    public const int BIRD_EAT_DELAY = 20;
     public const int MAX_ENERGY = 100;
     public const int MAX_WOOD_PER_TREE = 100000;
 
@@ -488,6 +489,60 @@ public class AnchorService : MonoBehaviour
             transaction.Add(interactInstruction);
             Debug.Log("Sign and send interact without session");
             await SendAndConfirmTransaction(Web3.Wallet, transaction, "interact without session.", onSucccess: onSuccess);
+        }
+
+        if (CurrentGameData == null)
+        {
+            await SubscribeToGameDataUpdates();
+        }
+    }
+
+    public async void EnterRace(bool useSession, Action onSuccess)
+    {
+        if (!Instance.IsSessionValid() && useSession)
+        {
+            await Instance.UpdateSessionValid();
+            ServiceFactory.Resolve<UiService>().OpenPopup(UiService.ScreenType.SessionPopup, new SessionPopupUiData());
+            return;
+        }
+
+        // only for time tracking feel free to remove
+        var stopWatch = new Stopwatch();
+        stopWatch.Start();
+        stopWatches[++transactionCounter] = stopWatch;
+
+        var transaction = new Transaction()
+        {
+            FeePayer = Web3.Account,
+            Instructions = new List<TransactionInstruction>(),
+            RecentBlockHash = await Web3.BlockHash(maxSeconds: 15)
+        };
+
+        EnterRaceAccounts chopTreeAccounts = new EnterRaceAccounts
+        {
+            Player = PlayerDataPDA,
+            GameData = GameDataPDA,
+            Vault = VaultPDA,
+            SystemProgram = SystemProgram.ProgramIdKey
+        };
+
+        if (useSession)
+        {
+            transaction.FeePayer = sessionWallet.Account.PublicKey;
+            chopTreeAccounts.Signer = sessionWallet.Account.PublicKey;
+            var chopInstruction = LastforeverProgram.EnterRace(chopTreeAccounts, levelSeed, AnchorProgramIdPubKey);
+            transaction.Add(chopInstruction);
+            Debug.Log("Sign and send chop tree with session");
+            await SendAndConfirmTransaction(sessionWallet, transaction, "Chop Tree with session.", isBlocking: false, onSucccess: onSuccess);
+        }
+        else
+        {
+            transaction.FeePayer = Web3.Account.PublicKey;
+            chopTreeAccounts.Signer = Web3.Account.PublicKey;
+            var chopInstruction = LastforeverProgram.EnterRace(chopTreeAccounts, levelSeed, AnchorProgramIdPubKey);
+            transaction.Add(chopInstruction);
+            Debug.Log("Sign and send init without session");
+            await SendAndConfirmTransaction(Web3.Wallet, transaction, "Chop Tree without session.", onSucccess: onSuccess);
         }
 
         if (CurrentGameData == null)

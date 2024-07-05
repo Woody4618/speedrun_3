@@ -7,7 +7,7 @@ lastforever = "h4D4pns4hvYhFnqy9cZiZyZm65kjZbFqbfZWdrnVjYZ"
 url = "https://anchor.projectserum.com"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

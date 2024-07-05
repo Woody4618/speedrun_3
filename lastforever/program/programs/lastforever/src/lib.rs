@@ -17,6 +17,10 @@ pub mod lastforever {
     init_player::init_player(ctx)
   }
 
+  pub fn enter_race(ctx: Context<EnterRace>, _level_seed: String) -> Result<()> {
+    enter_race::enter_race(ctx)
+  }
+
   pub fn interact_snail(
     ctx: Context<InteractSnail>,
     _level_seed: String,

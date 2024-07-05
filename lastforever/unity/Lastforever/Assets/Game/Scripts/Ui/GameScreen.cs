@@ -19,6 +19,7 @@ public class GameScreen : MonoBehaviour
     public Button ChuckWoodSessionButton;
     public Button NftsButton;
     public Button InitGameDataButton;
+    public Button SpawnSnailButton;
 
     public TextMeshProUGUI EnergyAmountText;
     public TextMeshProUGUI WoodAmountText;
@@ -41,6 +42,9 @@ public class GameScreen : MonoBehaviour
         NftsButton.onClick.AddListener(OnNftsButtonClicked);
         InitGameDataButton.onClick.AddListener(OnInitGameDataButtonClicked);
         CharacterStartPosition = ChuckWoodSessionButton.transform.localPosition;
+
+        SpawnSnailButton.onClick.AddListener(OnSpawnSnailButtonClicked);
+
         // In case we are not logged in yet load the LoginScene
         if (Web3.Account == null)
         {
@@ -52,6 +56,14 @@ public class GameScreen : MonoBehaviour
         AnchorService.OnPlayerDataChanged += OnPlayerDataChanged;
         AnchorService.OnGameDataChanged += OnGameDataChanged;
         AnchorService.OnInitialDataLoaded += UpdateContent;
+    }
+
+    private void OnSpawnSnailButtonClicked()
+    {
+      AnchorService.Instance.EnterRace(!Web3.Rpc.NodeAddress.AbsoluteUri.Contains("localhost"), () =>
+      {
+        Debug.Log("Snail sapned");
+      });
     }
 
     private void OnDestroy()
@@ -122,6 +134,20 @@ public class GameScreen : MonoBehaviour
         if (AnchorService.Instance.CurrentPlayerData == null)
         {
             return;
+        }
+
+        SpawnSnailButton.gameObject.SetActive(false);
+        if (AnchorService.Instance.CurrentGameData != null)
+        {
+          bool foundSnail = false;
+          foreach (var snail in AnchorService.Instance.CurrentGameData.Snails)
+          {
+            if (snail.Authority == Web3.Account.PublicKey)
+            {
+              foundSnail = true;
+            }
+          }
+          SpawnSnailButton.gameObject.SetActive(!foundSnail);
         }
 
         var lastLoginTime = AnchorService.Instance.CurrentPlayerData.LastLogin;

@@ -23,21 +23,26 @@ pub fn interact_snail(ctx: Context<InteractSnail>, action: u8) -> Result<()> {
         0 => {
           // Feed Snail
           snail_data.feed(Clock::get()?.unix_timestamp, 10);
+          ctx.accounts.player.update_energy()?;
+          ctx.accounts.player.energy -= 20;
         }
         1 => {
           // Speedup Snail
           snail_data.slime(Clock::get()?.unix_timestamp, 10);
+          ctx.accounts.player.energy -= 30;
         }
         2 => {
           snail_data.armor_level += 1;
           // Upgrade armor
           snail_data.upgrade_armor(Clock::get()?.unix_timestamp, snail_data.armor_level);
+          ctx.accounts.player.energy -= 55;
         }
         3 => {
           // TODO: implement weapon upgrade
           snail_data.armor_level += 1;
           // Upgrade armor
           snail_data.upgrade_armor(Clock::get()?.unix_timestamp, snail_data.armor_level);
+          ctx.accounts.player.energy -= 55;
         }
         _ => {
           return Err(GameErrorCode::InvalidAction.into());
